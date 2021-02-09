@@ -27,7 +27,7 @@ module.exports = {
                 ],
             },
             {
-                test: /\.css$/,
+                test: /\.css$/i,
                 use: [
                   "style-loader",
                   "css-loader"
@@ -35,7 +35,7 @@ module.exports = {
             },
             {
                 // FONT LOADER
-                test: /\.(woff(2)?|ttf|svg|eot)$/,
+                test: /\.(woff(2)?|ttf|svg|eot)$/i,
                 use: [
                     {
                         loader: 'file-loader',
@@ -48,7 +48,7 @@ module.exports = {
             },
             {
                 // FONT LOADER
-                test: /\.(jpe?g|png|gif|svg)$/,
+                test: /\.(jpe?g|png|gif|svg)$/i,
                 use: [
                     {
                         loader: 'file-loader',
