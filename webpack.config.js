@@ -33,17 +33,31 @@ module.exports = {
                   "css-loader"
                 ]	     
             },
-                {
-                    test: /\.(woff(2)?|ttf|svg|eot)$/,
-                    use: [
-                        {
-                            loader: 'file-loader',
-                            options: {
-                                outputPath: 'fonts/',
-                                publicPath: 'fonts/' 
-                            }
+            {
+                // FONT LOADER
+                test: /\.(woff(2)?|ttf|svg|eot)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            outputPath: 'fonts/',
+                            publicPath: 'fonts/' 
                         }
-                    ]
+                    }
+                ]
+            },
+            {
+                // FONT LOADER
+                test: /\.(jpe?g|png|gif|svg)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            outputPath: 'images/',
+                            publicPath: 'images/' 
+                        }
+                    }
+                ]
             }
         ]
     },
