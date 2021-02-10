@@ -36,6 +36,7 @@ module.exports = {
             {
                 // FONT LOADER
                 test: /\.(woff(2)?|ttf|svg|eot)$/i,
+                include: /fonts/,
                 use: [
                     {
                         loader: 'file-loader',
@@ -49,6 +50,7 @@ module.exports = {
             {
                 // IMAGE LOADER
                 test: /\.(jpe?g|png|gif|svg)$/i,
+                include: /images/,
                 use: [
                     {
                         loader: 'file-loader',
