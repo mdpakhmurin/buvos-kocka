@@ -1,0 +1,53 @@
+.content {
+    position: relative;
+    display: grid;
+    column-gap: 100px;
+    padding: 20px 40px;
+    width: 700px;
+    margin: 60px;
+
+    &__background{
+        backdrop-filter: blur(2px);
+        filter: drop-shadow(-20px 30px 13px rgba(0, 0, 0, 0.39));
+        background-color: rgba(0, 140, 255, 0.404);
+
+        overflow: hidden;
+        border-radius: 20px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: -1;
+    }
+
+    &__title{
+        font-size: 70px;
+        color: white;
+        font-family: 'Gagalin', sans-serif;
+        line-height: 70px;
+        padding-bottom: 40px;
+    }
+
+    &__paragraph{
+        font-size: 17px;
+        color: rgba(255, 255, 255, 0.733);
+        font-family: 'Montserrat', sans-serif;
+        font-style: italic;
+        &:not(:last-child){
+            padding-bottom: 20px;
+        }
+    }
+
+    &__image{
+        position: absolute;
+        filter: brightness(1.2) grayscale(0.2);
+        top: -90px;
+        right: -40px;
+        transition: 1.5s;
+        width: 200px;
+        &:hover{
+            transform: scale(1.1) rotate(5deg);
+        }
+    }
+}
