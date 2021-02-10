@@ -11,6 +11,14 @@ module.exports = {
         path: path.resolve(__dirname, './dist'),
         filename: 'bundle.js',
     },
+    resolve: {
+        alias: {
+            '@root': path.join(__dirname, 'src/'),
+            '@pages': '@root/pages',
+            '@blocks': '@root/blocks',
+            '@static': '@root/static',
+        }
+    },
 
     module: {
         rules: [
