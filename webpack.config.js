@@ -47,7 +47,7 @@ module.exports = {
                 ]
             },
             {
-                // FONT LOADER
+                // IMAGE LOADER
                 test: /\.(jpe?g|png|gif|svg)$/i,
                 use: [
                     {
