@@ -68,6 +68,20 @@ module.exports = {
                         }
                     }
                 ]
+            },
+            {
+                // MODEL LOADER
+                test: /\.obj$/i,
+                include: /models/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            outputPath: 'models/',
+                            publicPath: 'models/' 
+                        }
+                    }
+                ]
             }
         ]
     },
