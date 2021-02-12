@@ -2,47 +2,75 @@ import './style.scss';
 
 import * as THREE from './three/three.module.js'
 import {OBJLoader} from './three/OBJLoader.js'
+import oc from 'three-orbit-controls'
+const OrbitControls = oc(THREE)
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
-const renderer = new THREE.WebGLRenderer();
+let renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.shadowMap.enabled = true;
+
+
+scene.background = new THREE.Color( 0xeeeeeee );
+
+let width = 25;
+let height = width * ( window.innerHeight / window.innerWidth );
+const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
+
+
+
+
+
 document.body.appendChild( renderer.domElement );
 
-camera.position.z = 20;
+let controls = new OrbitControls( camera, renderer.domElement );
 
+let dirLight = new THREE.DirectionalLight( 0xffffff, 0.4 );
+dirLight.position.set( 0, 1, 0 );
+dirLight.castShadow = true;
+dirLight.shadow.radius = 40;
+dirLight.shadow.mapSize.width = 2048;
+dirLight.shadow.mapSize.height = 2048;
 
-var dirLight = new THREE.DirectionalLight( 0xffffff );
-var dirLight2 = new THREE.DirectionalLight( 0xffffff );
-dirLight2.position.set( 10, -30, 10 );
-dirLight.position.set( -10, 10, 10 );
-scene.add( dirLight , dirLight2);
+scene.add(dirLight);
+
+let dirLight2 = new THREE.DirectionalLight( 0xffffff, 0.25);
+dirLight2.position.set( 1, 0, 0 );
+dirLight2.castShadow = true;
+scene.add(dirLight2);
+
+let ambientLight = new THREE.AmbientLight( 0xffffff, 0.5 ); 
+scene.add( ambientLight );
+
+camera.position.set(60, 51, 61);
+camera.rotation.set(-0.696, 0.648, 0.467);
+
+var geometry = new THREE.PlaneGeometry( 10, 10, 1, 1 );
+let plane = new THREE.Mesh( geometry, new THREE.ShadowMaterial({opacity:0.1}));
+plane.rotation.x = -Math.PI/2;
+plane.position.set( 2, -3, 2 );
+plane.receiveShadow = true;
+scene.add(plane);
 
 const objLoader = new OBJLoader();
 
 objLoader.load(require('@static/models/cube.obj').default, (object) => {
     object.traverse( function ( child ) {
         if ( child instanceof THREE.Mesh ) {
-            // child.material = new THREE.MeshBasicMaterial({
-            //     color: 0xFFFF00, 
-            // });
-            child.material = new THREE.MeshPhongMaterial({
-                color: 0xFFFF00, 
-                shiness: 70,
-                specular: 0xffffff,});
+            child.material = new THREE.MeshPhongMaterial
+            ({
+                color: 0x555555, 
+            });
+            child.castShadow = true;
         }
     } );
     objLoader.load(require('@static/models/sticker.obj').default, (sticker) => {
         sticker.traverse( function ( child ) {
             if ( child instanceof THREE.Mesh ) {
-                // child.material = new THREE.MeshBasicMaterial({
-                //     color: 0xFFFF00, 
-                // });
-                child.material = new THREE.MeshPhongMaterial({
-                    color: 0xFF0000, 
-                    shiness: 70,
-                    specular: 0xffffff,});
+                child.material = new THREE.MeshPhongMaterial
+                ({
+                    color: Math.random()*0xffffff, 
+                });
             }
         } );
         createBuvosKocka( object, sticker, { x: 3 , y: 3, z: 3} );
@@ -117,10 +145,6 @@ function createBuvosKocka( cubeModel, stickerModel, size ){
 
 const animate = function () {
     requestAnimationFrame( animate );
-
-    scene.rotation.x += 0.01;
-    scene.rotation.y += 0.01;
-
     renderer.render( scene, camera );
 };
 animate();
