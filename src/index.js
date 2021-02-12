@@ -43,10 +43,13 @@ plane.position.set( 2, -3, 2 );
 plane.receiveShadow = true;
 scene.add(plane);
 
+let buvosKocka = new THREE.Object3D();
+scene.add(buvosKocka);
+
 const objLoader = new OBJLoader();
 
-objLoader.load(require('@static/models/cube.obj').default, (object) => {
-    object.traverse( function ( child ) {
+objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
+    cube.traverse( function ( child ) {
         if ( child instanceof THREE.Mesh ) {
             child.material = new THREE.MeshPhongMaterial
             ({
@@ -55,7 +58,7 @@ objLoader.load(require('@static/models/cube.obj').default, (object) => {
             child.castShadow = true;
         }
     } );
-    objLoader.load(require('@static/models/sticker.obj').default, (sticker) => {
+    objLoader.load(require('@static/models/sticker.obj').default, ( sticker ) => {
         sticker.traverse( function ( child ) {
             if ( child instanceof THREE.Mesh ) {
                 child.material = new THREE.MeshPhongMaterial
@@ -64,16 +67,15 @@ objLoader.load(require('@static/models/cube.obj').default, (object) => {
                 });
             }
         } );
-        createBuvosKocka( object, sticker, { x: 3 , y: 3, z: 3} );
+        createBuvosKocka( buvosKocka, cube, sticker, { x: 3 , y: 3, z: 3} );
     });
 });
 
-function createBuvosKocka( cubeModel, stickerModel, size ){
-    let buvosKocka = new THREE.Object3D();
+function createBuvosKocka( target, cubeModel, stickerModel, size ){
     function createBuvosKockaBlock(position){
         let cube = cubeModel.clone();
         cube.position.set(position.x, position.y, position.z);
-        buvosKocka.add(cube);
+        target.add(cube);
 
         if ( position.x == 0){
             let sticker = stickerModel.clone();
@@ -111,7 +113,6 @@ function createBuvosKocka( cubeModel, stickerModel, size ){
         }
     }
 
-    scene.add(buvosKocka); /////////////////////////////////////////////////////
     for (let x = 0; x < size.x; x++){
         for (let y = 0; y < size.y; y++){
             createBuvosKockaBlock( {x: x, y: y, z: 0} );
@@ -135,7 +136,17 @@ function createBuvosKocka( cubeModel, stickerModel, size ){
 }
 
 const animate = function () {
-    requestAnimationFrame( animate );
+    let time = requestAnimationFrame( animate );
+
+    buvosKockaFly(buvosKockaFly(time));
+
     renderer.render( scene, camera );
 };
+
+function buvosKockaFly( time ){
+    if ( time ) {
+        buvosKocka.position.y = Math.sin( time * 0.01 ) * 0.2;
+        plane.material.opacity = 1 - ( Math.sin( time * 0.01 ) * 0.07 + 0.85);
+    }
+}
 animate();
