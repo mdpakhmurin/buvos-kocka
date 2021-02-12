@@ -7,46 +7,37 @@ const OrbitControls = oc(THREE)
 
 const scene = new THREE.Scene();
 let renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.shadowMap.enabled = true;
-
-
-scene.background = new THREE.Color( 0xeeeeeee );
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
 
 let width = 25;
 let height = width * ( window.innerHeight / window.innerWidth );
-const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
+const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 200 );
+let orbitControls = new OrbitControls( camera, renderer.domElement );
 
-
-
-
-
-document.body.appendChild( renderer.domElement );
-
-let controls = new OrbitControls( camera, renderer.domElement );
-
-let dirLight = new THREE.DirectionalLight( 0xffffff, 0.4 );
-dirLight.position.set( 0, 1, 0 );
-dirLight.castShadow = true;
-dirLight.shadow.radius = 40;
-dirLight.shadow.mapSize.width = 2048;
-dirLight.shadow.mapSize.height = 2048;
-
-scene.add(dirLight);
-
-let dirLight2 = new THREE.DirectionalLight( 0xffffff, 0.25);
-dirLight2.position.set( 1, 0, 0 );
-dirLight2.castShadow = true;
-scene.add(dirLight2);
-
-let ambientLight = new THREE.AmbientLight( 0xffffff, 0.5 ); 
-scene.add( ambientLight );
-
+scene.background = new THREE.Color( 0xeeeeeee );
 camera.position.set(60, 51, 61);
 camera.rotation.set(-0.696, 0.648, 0.467);
 
-var geometry = new THREE.PlaneGeometry( 10, 10, 1, 1 );
-let plane = new THREE.Mesh( geometry, new THREE.ShadowMaterial({opacity:0.1}));
+// Light
+let topShadowDirectionalLight = new THREE.DirectionalLight( 0xffffff, 0.4 );
+topShadowDirectionalLight.castShadow = true;
+topShadowDirectionalLight.shadow.radius = 60;
+topShadowDirectionalLight.shadow.mapSize.width = 4096;
+topShadowDirectionalLight.shadow.mapSize.height = 4096;
+scene.add(topShadowDirectionalLight);
+//
+let sideDirectionalLite = new THREE.DirectionalLight( 0xffffff, 0.25);
+sideDirectionalLite.position.set( 1, 0, 0 );
+sideDirectionalLite.castShadow = true;
+scene.add(sideDirectionalLite);
+//
+let ambientLight = new THREE.AmbientLight( 0xffffff, 0.5 ); 
+scene.add( ambientLight );
+
+// Shadow Plane
+let plane = new THREE.Mesh( new THREE.PlaneGeometry( 10, 10, 1, 1 ), new THREE.ShadowMaterial({opacity:0.1}));
 plane.rotation.x = -Math.PI/2;
 plane.position.set( 2, -3, 2 );
 plane.receiveShadow = true;
