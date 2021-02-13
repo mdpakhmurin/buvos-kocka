@@ -66,6 +66,7 @@ objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
 });
 
 function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
+    console.log(target)
     let sideHelper = new THREE.Mesh(
                         new THREE.BoxGeometry(size.x, size.y, size.z),
                         new THREE.MeshBasicMaterial({color: 0x000000, opacity: 0, transparent:true}),
@@ -244,33 +245,6 @@ document.addEventListener('mousedown', function (event) {
 	mouseDownPosition.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
     raycaster.setFromCamera( mouseDownPosition, camera );
-
-    // let block = raycaster.intersectObjects( scene.children, true)[0]?.object;
-    // while (block?.parent && block?.parent.name != "buvosKocka"){
-    //     block = block.parent;
-    // }
-    // // console.log(block)
-
-    // let step = 0;
-    // let startTime = performance.now();
-    // let duration = 1000;
-    // let arrayus = []
-    // function rotateus( currentTime ){
-    //     let lastStep = step;
-    //     step = easeInOutCubic( ( currentTime - startTime ) / duration );
-    //     arrayus.forEach(element => {
-    //         rotateAroundWorldAxis(element, new THREE.Vector3(0,1,0), Math.PI/2*(step-lastStep));
-    //     });
-    //     if (step < 1) requestAnimationFrame( rotateus ); else step = 1;
-    // }
-
-    // console.log(block)
-    // buvosKocka.children.forEach(element => {
-    //     if (Math.abs(element.position.y - block.position.y) < 0.3){
-    //         arrayus.push(element)
-    //     }
-    // });
-    // requestAnimationFrame(rotateus);
 });
 
 let mouseUpPosition = new THREE.Vector2();
@@ -316,115 +290,69 @@ document.addEventListener('mouseup', function (event) {
             });
             if (step < 1) requestAnimationFrame( rotateus ); else step = 1;
         }
-        console.log(mouseDiff)
-        console.log(intersectSide)
-        console.log(Math.PI/6 + " " + Math.PI*5/6 + " " + mouseDiff.angle());
 
 
-        // КРАСНАЯ
+        let inaccuracy = 0.3
+        // Верхняя грань
         if (intersectSide.x == 0 && intersectSide.y == 1 && intersectSide.z == 0){
-            if (0 < mouseDiff.angle() && mouseDiff.angle() < Math.PI/2 ){
+            if (0 < mouseDiff.angle() && mouseDiff.angle() < Math.PI / 2 || Math.PI < mouseDiff.angle() && mouseDiff.angle() < Math.PI * 3 / 2 ){
                 buvosKocka.children.forEach(element => {
-                    if (Math.abs(element.position.x - block.position.x) < 0.3){
+                    if (Math.abs(element.position.x - block.position.x) < inaccuracy){
                         arrayus.push(element)
                     }
-                    direction.set(-1, 0, 0);
                 });
+                direction.set(mouseDiff.x > 0? -1 : 1, 0, 0);
             }
-            else if ( Math.PI/2 < mouseDiff.angle() && mouseDiff.angle() < Math.PI ){
+            else{
                 buvosKocka.children.forEach(element => {
-                    if (Math.abs(element.position.z - block.position.z) < 0.3){
+                    if (Math.abs(element.position.z - block.position.z) < inaccuracy){
                         arrayus.push(element)
                     }
-                    direction.set(0, 0, 1);
                 });
+                direction.set(0, 0, mouseDiff.x > 0? -1 : 1);
             }
-            else if (Math.PI < mouseDiff.angle() && mouseDiff.angle() < Math.PI*3/2 ){
+        }
+
+        // Левая грань
+        if (intersectSide.x == 0 && intersectSide.y == 0 && intersectSide.z == 1){
+            if (Math.PI/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
                 buvosKocka.children.forEach(element => {
-                    if (Math.abs(element.position.x - block.position.x) < 0.3){
-                        arrayus.push(element)
+                    if (Math.abs(element.position.x - block.position.x) < inaccuracy){
+                        arrayus.push(element);
                     }
-                    direction.set(1, 0, 0);
                 });
+                direction.set( mouseDiff.y > 0? -1: 1, 0, 0);
             }
-            else if ( Math.PI*3/2< mouseDiff.angle() && mouseDiff.angle() < Math.PI*2 ){
+            else{
                 buvosKocka.children.forEach(element => {
-                    if (Math.abs(element.position.z - block.position.z) < 0.3){
+                    if (Math.abs(element.position.y - block.position.y) < inaccuracy){
                         arrayus.push(element)
                     }
-                    direction.set(0, 0, -1);
+                    direction.set(0, mouseDiff.x > 0? 1: -1, 0);
                 });
             }
         }
 
-        //вверх синяя и желтая
-        if (Math.PI/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 ){
-            buvosKocka.children.forEach(element => {
-                if (intersectSide.x == 0 && intersectSide.y == 0 && intersectSide.z == 1){
-                    if (Math.abs(element.position.x - block.position.x) < 0.3){
+        // Правая грань
+        if (intersectSide.x == 1 && intersectSide.y == 0 && intersectSide.z == 0){
+            if (Math.PI / 9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
+                buvosKocka.children.forEach(element => {
+                    if (Math.abs(element.position.z - block.position.z) < inaccuracy){
+                        arrayus.push(element);
+                    }
+                });
+                direction.set( 0, 0, mouseDiff.y > 0? 1: -1);
+            }
+            else{
+                buvosKocka.children.forEach(element => {
+                    if (Math.abs(element.position.y - block.position.y) < inaccuracy){
                         arrayus.push(element)
                     }
-                    direction.set(-1, 0, 0);
-                }
-                if (intersectSide.x == 1 && intersectSide.y == 0 && intersectSide.z == 0){
-                    if (Math.abs(element.position.z - block.position.z) < 0.3){
-                        arrayus.push(element)
-                    }
-                    direction.set(0, 0, 1);
-                }
-            });
+                    direction.set(0, mouseDiff.x > 0? 1: -1, 0);
+                });
+            }
         }
-        //вниз синяя и желтая
-        else if (Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
-            buvosKocka.children.forEach(element => {
-                if (intersectSide.x == 0 && intersectSide.y == 0 && intersectSide.z == 1){
-                    if (Math.abs(element.position.x - block.position.x) < 0.3){
-                        arrayus.push(element)
-                    }
-                    direction.set(1, 0, 0);
-                }
-                if (intersectSide.x == 1 && intersectSide.y == 0 && intersectSide.z == 0){
-                    if (Math.abs(element.position.z - block.position.z) < 0.3){
-                        arrayus.push(element)
-                    }
-                    direction.set(0, 0, -1);
-                }
-            });
-        }
-        // вправо синяя и желтая
-        else if (mouseDiff.x > 0){
-            buvosKocka.children.forEach(element => {
-                if (intersectSide.x == 0 && intersectSide.y == 0 && intersectSide.z == 1){
-                    if (Math.abs(element.position.y - block.position.y) < 0.3){
-                        arrayus.push(element)
-                    }
-                    direction.set(0, 1, 0);
-                }
-                if (intersectSide.x == 1 && intersectSide.y == 0 && intersectSide.z == 0){
-                    if (Math.abs(element.position.y - block.position.y) < 0.3){
-                        arrayus.push(element)
-                    }
-                    direction.set(0, 1, 0);
-                }
-            });
-        }
-        // влево синяя и желта
-        else if (mouseDiff.x < 0){
-            buvosKocka.children.forEach(element => {
-                if (intersectSide.x == 0 && intersectSide.y == 0 && intersectSide.z == 1){
-                    if (Math.abs(element.position.y - block.position.y) < 0.3){
-                        arrayus.push(element)
-                    }
-                    direction.set(0, -1, 0);
-                }
-                if (intersectSide.x == 1 && intersectSide.y == 0 && intersectSide.z == 0){
-                    if (Math.abs(element.position.y - block.position.y) < 0.3){
-                        arrayus.push(element)
-                    }
-                    direction.set(0, -1, 0);
-                }
-            });
-        }
+
         requestAnimationFrame(rotateus);
     }
 });
