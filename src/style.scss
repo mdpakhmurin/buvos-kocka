@@ -1,7 +1,9 @@
-@import "static/fonts/gagalin/gagalin.scss";
-@import "static/fonts/montserrat/montserrat.scss";
+@import "@static/fonts/gagalin/gagalin.scss";
+@import "@static/fonts/montserrat/montserrat.scss";
+@import "@static/fonts/alegreya-sans/alegreya-sans.scss";
 
-@import "blocks/content/content.scss";
+@import "@blocks/content/content.scss";
+@import "@blocks/buvos-kocka/buvos-kocka__timer/buvos-kocka__timer.scss";
 
 body{
     margin: 0;

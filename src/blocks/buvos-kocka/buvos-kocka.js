@@ -1,14 +1,18 @@
 import * as THREE from '@modules/three/three.module.js'
 import {OBJLoader} from '@modules/three/OBJLoader.js'
 
+let buvosKockaContainer = document.querySelector('.buvos-kocka');
+if (buvosKockaContainer){
+
+
 let renderer = new THREE.WebGLRenderer({ antialias: true });
-document.querySelector('.buvos-kocka').appendChild( renderer.domElement );
+buvosKockaContainer.appendChild( renderer.domElement );
 renderer.shadowMap.enabled = true;
 renderer.setSize( window.innerWidth, window.innerHeight );
 
 const scene = new THREE.Scene();
 
-let width = 20;
+let width = 15;
 let height = width * ( window.innerHeight / window.innerWidth );
 const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 200 );
 
@@ -56,7 +60,7 @@ objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
         }
     } );
     objLoader.load(require('@static/models/sticker.obj').default, ( sticker ) => {
-        createBuvosKocka( buvosKocka, cube, sticker, { x: 4, y: 4, z: 4}, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
+        createBuvosKocka( buvosKocka, cube, sticker, { x: 3, y: 3, z: 3}, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
         //TODO: вместо генерации материала для каждого блока генерировать материал только для каждого цвета
     });
 });
@@ -383,16 +387,28 @@ document.addEventListener('keydown', function( event ){
     }
 });
 
+// Куб двигается вверх и вниз
 function buvosKockaFly( time ){
-    if ( time ) {
-        buvosKocka.position.y = Math.sin( time * 0.001 ) * 0.2;
-        plane.material.opacity = 1 - ( Math.sin( time * 0.001 ) * 0.07 + 0.9);
-    }
-}
-
-const animate = function () {
-    requestAnimationFrame( animate );
+    buvosKocka.position.y = Math.sin( time * 0.001 ) * 0.2;
+    plane.material.opacity = 1 - ( Math.sin( time * 0.001 ) * 0.07 + 0.9);
     requestAnimationFrame(buvosKockaFly);
+}
+requestAnimationFrame(buvosKockaFly);
+
+let buvosKockaTimer = document.querySelector('.buvos-kocka__timer');
+function stopwatch ( time ){
+    buvosKockaTimer.textContent = (~~(time/1000/60)).toString().padStart(2, '0') + "." + 
+                                (~~(time/1000)%60).toString().padStart(2, '0') + "." +
+                                (~~(time/10)%100).toString().padStart(2, '0');
+
+    requestAnimationFrame(stopwatch);
+}
+requestAnimationFrame(stopwatch);
+
+function animate() {
+    requestAnimationFrame( animate );
     renderer.render( scene, camera );
 };
 animate();
+
+}
