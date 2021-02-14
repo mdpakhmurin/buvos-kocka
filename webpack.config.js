@@ -17,6 +17,7 @@ module.exports = {
             '@pages': '@root/pages',
             '@blocks': '@root/blocks',
             '@static': '@root/static',
+            '@modules': '@root/modules'
         }
     },
 
