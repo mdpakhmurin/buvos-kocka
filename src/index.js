@@ -2,8 +2,6 @@ import './style.scss';
 
 import * as THREE from './three/three.module.js'
 import {OBJLoader} from './three/OBJLoader.js'
-// import oc from 'three-orbit-controls'
-// const OrbitControls = oc(THREE)
 
 const scene = new THREE.Scene();
 let renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -11,10 +9,9 @@ renderer.shadowMap.enabled = true;
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-let width = 10;
+let width = 20;
 let height = width * ( window.innerHeight / window.innerWidth );
 const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 200 );
-// let orbitControls = new OrbitControls( camera, renderer.domElement );
 
 scene.background = new THREE.Color( 0xeeeeeee );
 camera.position.set(60, 51, 61);
@@ -60,24 +57,24 @@ objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
         }
     } );
     objLoader.load(require('@static/models/sticker.obj').default, ( sticker ) => {
-        createBuvosKocka( buvosKocka, cube, sticker, { x: 3 , y: 3, z: 3}, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
+        createBuvosKocka( buvosKocka, cube, sticker, { x: 4, y: 4, z: 4}, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
         //TODO: вместо генерации материала для каждого блока генерировать материал только для каждого цвета
     });
 });
 
 function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
-    console.log(target)
-    let sideHelper = new THREE.Mesh(
+    let sideWrapper = new THREE.Mesh(
                         new THREE.BoxGeometry(size.x, size.y, size.z),
                         new THREE.MeshBasicMaterial({color: 0x000000, opacity: 0, transparent:true}),
                     ); 
-    sideHelper.name = "sideHelper";
-    target.add(sideHelper)
+    sideWrapper.name = "sideWrapper";
+    
+    target.add(sideWrapper);
 
     function createBuvosKockaBlock(position){
         let cube = cubeModel.clone();
         cube.position.set(position.x - size.x/2 + 0.5, position.y - size.y/2 + 0.5, position.z-size.z/2  + 0.5);
-        target.add(cube);
+        sideWrapper.add(cube);
 
         if ( position.x == 0){
             let sticker = stickerModel.clone();
@@ -197,11 +194,6 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
     }
 }
 
-// Вращение кубика рубика
-//  Q - Влево вверх
-//  W - Вправо
-//  E - Вправо вверх
-//  С зажатым shif - в обратную сторону
 let rotateAroundWorldAxis = function(object, axis, radians) {
     let rotWorldMatrix = new THREE.Matrix4();
     rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
@@ -223,22 +215,9 @@ function easeInOutCubic(x){
 }
 
 
-
-
-
-
-
-
-
-
-
-
+// Управление мышью
 const raycaster = new THREE.Raycaster();
-// function onMouseMove( event ) {
-// 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-// 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-// }
-// document.addEventListener('mousemove', onMouseMove);
+//
 let mouseDownPosition = new THREE.Vector2();
 document.addEventListener('mousedown', function (event) {
     mouseDownPosition.x = ( event.clientX / window.innerWidth ) * 2 - 1;
@@ -246,7 +225,7 @@ document.addEventListener('mousedown', function (event) {
 
     raycaster.setFromCamera( mouseDownPosition, camera );
 });
-
+//
 let mouseUpPosition = new THREE.Vector2();
 document.addEventListener('mouseup', function (event) {
     mouseUpPosition.x = ( event.clientX / window.innerWidth ) * 2 - 1;
@@ -256,100 +235,106 @@ document.addEventListener('mouseup', function (event) {
     mouseDiff.subVectors(mouseUpPosition, mouseDownPosition);
 
     let intersect = raycaster.intersectObjects( scene.children, true )
+
     let block = null;
     let intersectSide = null;
+    // Поиск первого элемента на пути луча (кроме sideWrapper)
     intersect.some( function( element ) {
-        if (element.object.name != "sideHelper"){
+        if (element.object.name != "sideWrapper"){
             block = element.object;
             return true;
         }
         return false;
     });
+    // Поиск sideWrapper на пути луча
     intersect.some( function( element ) {
-        if (element.object.name == "sideHelper"){
+        if (element.object.name == "sideWrapper"){
             intersectSide = element.face.normal;
             return true;
         }
         return false;
     });
 
-    while (block?.parent && block?.parent.name != "buvosKocka")
+    while (block?.parent && block?.parent.name != "sideWrapper")
         block = block.parent;
 
-    if (block && block.parent?.name == "buvosKocka"){
-        let arrayus = []
-        let direction = new THREE.Vector3(0,0,0)
-        let step = 0;
-        let startTime = performance.now();
+    if (block && block.parent?.name == "sideWrapper"){
         let duration = 1000;
+
+        let direction = new THREE.Vector3(0,0,0);
+        let rotationBlocks = []
+        let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
+        let startTime = performance.now();
+        let step = 0;
         function rotateus( currentTime ){
             let lastStep = step;
+
             step = easeInOutCubic( ( currentTime - startTime ) / duration );
-            arrayus.forEach(element => {
+
+            if (step < 1) requestAnimationFrame( rotateus ); else step = 1;
+            
+            rotationBlocks.forEach(element => {
                 rotateAroundWorldAxis(element, direction, Math.PI/2*(step-lastStep));
             });
-            if (step < 1) requestAnimationFrame( rotateus ); else step = 1;
         }
 
-
-        let inaccuracy = 0.3
+        // Вращение в зависимости от выбранной грани
+        let inaccuracy = 0.2
         // Верхняя грань
         if (intersectSide.x == 0 && intersectSide.y == 1 && intersectSide.z == 0){
             if (0 < mouseDiff.angle() && mouseDiff.angle() < Math.PI / 2 || Math.PI < mouseDiff.angle() && mouseDiff.angle() < Math.PI * 3 / 2 ){
-                buvosKocka.children.forEach(element => {
+                sideWrapper.children.forEach(element => {
                     if (Math.abs(element.position.x - block.position.x) < inaccuracy){
-                        arrayus.push(element)
+                        rotationBlocks.push(element)
                     }
                 });
                 direction.set(mouseDiff.x > 0? -1 : 1, 0, 0);
             }
             else{
-                buvosKocka.children.forEach(element => {
+                sideWrapper.children.forEach(element => {
                     if (Math.abs(element.position.z - block.position.z) < inaccuracy){
-                        arrayus.push(element)
+                        rotationBlocks.push(element)
                     }
                 });
                 direction.set(0, 0, mouseDiff.x > 0? -1 : 1);
             }
         }
-
         // Левая грань
         if (intersectSide.x == 0 && intersectSide.y == 0 && intersectSide.z == 1){
-            if (Math.PI/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
-                buvosKocka.children.forEach(element => {
+            if (Math.PI / 9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
+                sideWrapper.children.forEach(element => {
                     if (Math.abs(element.position.x - block.position.x) < inaccuracy){
-                        arrayus.push(element);
+                        rotationBlocks.push(element);
                     }
                 });
                 direction.set( mouseDiff.y > 0? -1: 1, 0, 0);
             }
             else{
-                buvosKocka.children.forEach(element => {
+                sideWrapper.children.forEach(element => {
                     if (Math.abs(element.position.y - block.position.y) < inaccuracy){
-                        arrayus.push(element)
+                        rotationBlocks.push(element)
                     }
-                    direction.set(0, mouseDiff.x > 0? 1: -1, 0);
                 });
+                direction.set(0, mouseDiff.x > 0? 1: -1, 0);
             }
         }
-
         // Правая грань
         if (intersectSide.x == 1 && intersectSide.y == 0 && intersectSide.z == 0){
             if (Math.PI / 9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
-                buvosKocka.children.forEach(element => {
+                sideWrapper.children.forEach(element => {
                     if (Math.abs(element.position.z - block.position.z) < inaccuracy){
-                        arrayus.push(element);
+                        rotationBlocks.push(element);
                     }
                 });
                 direction.set( 0, 0, mouseDiff.y > 0? 1: -1);
             }
             else{
-                buvosKocka.children.forEach(element => {
+                sideWrapper.children.forEach(element => {
                     if (Math.abs(element.position.y - block.position.y) < inaccuracy){
-                        arrayus.push(element)
+                        rotationBlocks.push(element)
                     }
-                    direction.set(0, mouseDiff.x > 0? 1: -1, 0);
                 });
+                direction.set(0, mouseDiff.x > 0? 1: -1, 0);
             }
         }
 
@@ -358,42 +343,48 @@ document.addEventListener('mouseup', function (event) {
 });
 
 
-
-
-
-
-
-
-
+// Управление клавиатурой
+// Вращение кубика рубика
+//  Q - Влево вверх
+//  W - Вправо
+//  E - Вправо вверх
+//  С зажатым shif - в обратную сторону
 document.addEventListener('keydown', function( event ){
     let duration = 1000;
 
     let startTime = performance.now();
     let step = 0;
 
+    let direction = null;
+    let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
+
     function rotateBuvosKockaAnimation ( currentTime ){
         let lastStep = step;
 
         step = easeInOutCubic( ( currentTime - startTime ) / duration );
         if (step < 1) requestAnimationFrame( rotateBuvosKockaAnimation ); else step = 1;
-
-        switch( event.code ){
-            case 'KeyQ': 
-                buvosKocka.rotateOnWorldAxis(new THREE.Vector3( 0, 0, event.shiftKey == 1? -1: 1 ), Math.PI / 2 * (step-lastStep))
-                break;
-            case 'KeyW':
-                buvosKocka.rotateOnWorldAxis(new THREE.Vector3( 0, event.shiftKey == 1? -1: 1, 0 ), Math.PI / 2 * (step-lastStep))
-                break;
-            case 'KeyE':
-                buvosKocka.rotateOnWorldAxis(new THREE.Vector3( event.shiftKey == 1? 1: -1, 0, 0), Math.PI / 2 * (step-lastStep))
-                break;
-        }
+ 
+        sideWrapper.children.forEach( cube => {
+            rotateAroundWorldAxis(cube, direction, Math.PI / 2 * (step-lastStep));
+        });
     }
 
-    if (["KeyQ", "KeyW", "KeyE"].indexOf(event.code) > -1)
-        requestAnimationFrame( rotateBuvosKockaAnimation );
-});
+    if (["KeyQ", "KeyW", "KeyE"].indexOf(event.code) > -1){
+        switch( event.code ){
+            case 'KeyQ': 
+                direction = new THREE.Vector3( 0, 0, event.shiftKey == 1? -1: 1 );
+                break;
+            case 'KeyW':
+                direction = new THREE.Vector3( 0, event.shiftKey == 1? -1: 1, 0 );
+                break;
+            case 'KeyE':
+                direction = new THREE.Vector3( event.shiftKey == 1? 1: -1, 0, 0);
+                break;
+        }
 
+        requestAnimationFrame( rotateBuvosKockaAnimation );
+    }
+});
 
 function buvosKockaFly( time ){
     if ( time ) {
