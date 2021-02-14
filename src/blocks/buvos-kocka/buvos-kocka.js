@@ -197,6 +197,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
     }
 }
 
+
 let rotateAroundParentAxis = function(object, axis, radians) {
     let rotWorldMatrix = new THREE.Matrix4();
     rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
@@ -216,6 +217,7 @@ function easeInOutCubic(x){
 }
 
 
+let canRotate = true;
 // Управление мышью
 const raycaster = new THREE.Raycaster();
 //
@@ -231,6 +233,9 @@ let mouseUpPosition = new THREE.Vector2();
 document.addEventListener('mouseup', function (event) {
     mouseUpPosition.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouseUpPosition.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    if (!canRotate)
+        return;
 
     let mouseDiff = new THREE.Vector2();
     mouseDiff.subVectors(mouseUpPosition, mouseDownPosition);
@@ -260,6 +265,8 @@ document.addEventListener('mouseup', function (event) {
         block = block.parent;
 
     if (block && block.parent?.name == "sideWrapper"){
+        canRotate = false;
+        
         let duration = 1000;
 
         let direction = new THREE.Vector3(0,0,0);
@@ -272,7 +279,7 @@ document.addEventListener('mouseup', function (event) {
 
             step = easeInOutCubic( ( currentTime - startTime ) / duration );
 
-            if (step < 1) requestAnimationFrame( rotateus ); else step = 1;
+            if (step < 1) requestAnimationFrame( rotateus ); else {step = 1; canRotate = true};
             
             rotationBlocks.forEach(element => {
                 rotateAroundParentAxis(element, direction, Math.PI/2*(step-lastStep));
@@ -363,14 +370,14 @@ document.addEventListener('keydown', function( event ){
         let lastStep = step;
 
         step = easeInOutCubic( ( currentTime - startTime ) / duration );
-        if (step < 1) requestAnimationFrame( rotateBuvosKockaAnimation ); else step = 1;
+        if (step < 1) requestAnimationFrame( rotateBuvosKockaAnimation ); else {step = 1; canRotate = true};
  
         sideWrapper.children.forEach( cube => {
             rotateAroundParentAxis(cube, direction, Math.PI / 2 * (step-lastStep));
         });
     }
 
-    if (["KeyQ", "KeyW", "KeyE"].indexOf(event.code) > -1){
+    if (["KeyQ", "KeyW", "KeyE"].indexOf(event.code) > -1 && canRotate){
         switch( event.code ){
             case 'KeyQ': 
                 direction = new THREE.Vector3( 0, 0, event.shiftKey == 1? -1: 1 );
@@ -382,7 +389,7 @@ document.addEventListener('keydown', function( event ){
                 direction = new THREE.Vector3( event.shiftKey == 1? 1: -1, 0, 0);
                 break;
         }
-
+        canRotate = false;
         requestAnimationFrame( rotateBuvosKockaAnimation );
     }
 });
