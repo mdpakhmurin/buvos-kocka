@@ -60,12 +60,17 @@ objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
         }
     } );
     objLoader.load(require('@static/models/sticker.obj').default, ( sticker ) => {
-        createBuvosKocka( buvosKocka, cube, sticker, 5, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
-        //TODO: вместо генерации материала для каждого блока генерировать материал только для каждого цвета
+        let colors = [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ];
+        let materials = colors.map( (color) => { 
+            return new THREE.MeshPhongMaterial({
+                color: color
+            });
+        })
+        createBuvosKocka( buvosKocka, cube, sticker, 5,  materials);
     });
 });
 
-function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
+function createBuvosKocka( target, cubeModel, stickerModel, size, materials){
     let sideWrapper = new THREE.Mesh(
                         new THREE.BoxGeometry(size, size, size),
                         new THREE.MeshPhongMaterial({opacity:0, transparent: true, alphaTest: 1})
@@ -85,10 +90,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             sticker.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
-                    child.material = new THREE.MeshPhongMaterial
-                    ({
-                        color: colors[0]
-                    });
+                    child.material = materials[0];
                 }
             } );
 
@@ -100,10 +102,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             sticker.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
-                    child.material = new THREE.MeshPhongMaterial
-                    ({
-                        color: colors[1]
-                    });
+                    child.material = materials[1];
                 }
             } );
 
@@ -116,10 +115,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             sticker.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
-                    child.material = new THREE.MeshPhongMaterial
-                    ({
-                        color: colors[2]
-                    });
+                    child.material = materials[2];
                 }
             } );
 
@@ -132,10 +128,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             sticker.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
-                    child.material = new THREE.MeshPhongMaterial
-                    ({
-                        color: colors[3]
-                    });
+                    child.material = materials[3];
                 }
             } );
 
@@ -148,10 +141,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             sticker.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
-                    child.material = new THREE.MeshPhongMaterial
-                    ({
-                        color: colors[4]
-                    });
+                    child.material = materials[4];
                 }
             } );
 
@@ -164,10 +154,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             sticker.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
-                    child.material = new THREE.MeshPhongMaterial
-                    ({
-                        color: colors[5]
-                    });
+                    child.material = materials[5];
                 }
             } );
 
@@ -406,7 +393,15 @@ document.addEventListener('keydown', function( event ){
         requestAnimationFrame(rotateObjects(sideWrapper.children, direction, 1000));
     }
     if (event.code=="KeyR")
-        shuffleBuvosKocka(20, 400, 100, 12)
+    {
+        let firstBlock = null
+        sideWrapper.children.forEach(element => {
+            if (element.children.length == 4){
+                firstBlock = element
+                firstBlock.visible = false;
+            }
+        });
+    }
 });
 
 // Куб двигается вверх и вниз
