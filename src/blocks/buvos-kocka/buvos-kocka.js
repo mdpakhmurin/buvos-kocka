@@ -230,8 +230,6 @@ function selectSimilarPosition( array, position, isX = true, isY = true, isZ = t
     return similarArray;
 }
 
-
-
 function rotateObjects( rotationBlocks, direction, duration ){
     let startTime = performance.now();
     let step = 0;
@@ -349,7 +347,7 @@ document.addEventListener('mouseup', function (event) {
 //  E - Вправо вверх
 //  С зажатым shif - в обратную сторону
 document.addEventListener('keydown', function( event ){
-    let direction = null;
+    let direction = new THREE.Vector3(0,0,0);
     let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
 
     rotateObjects(sideWrapper.children, direction, 1000);
@@ -357,13 +355,13 @@ document.addEventListener('keydown', function( event ){
     if (["KeyQ", "KeyW", "KeyE"].indexOf(event.code) > -1 && canRotate){
         switch( event.code ){
             case 'KeyQ': 
-                direction = new THREE.Vector3( 0, 0, event.shiftKey == 1? -1: 1 );
+                direction.set( 0, 0, event.shiftKey == 1? -1: 1 );
                 break;
             case 'KeyW':
-                direction = new THREE.Vector3( 0, event.shiftKey == 1? -1: 1, 0 );
+                direction.set( 0, event.shiftKey == 1? -1: 1, 0 );
                 break;
             case 'KeyE':
-                direction = new THREE.Vector3( event.shiftKey == 1? 1: -1, 0, 0);
+                direction.set( event.shiftKey == 1? 1: -1, 0, 0);
                 break;
         }
         canRotate = false;
