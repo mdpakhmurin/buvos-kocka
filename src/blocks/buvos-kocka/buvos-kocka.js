@@ -60,7 +60,7 @@ objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
         }
     } );
     objLoader.load(require('@static/models/sticker.obj').default, ( sticker ) => {
-        createBuvosKocka( buvosKocka, cube, sticker, { x: 3, y: 3, z: 3}, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
+        createBuvosKocka( buvosKocka, cube, sticker, { x: 2, y: 2, z: 2}, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
         //TODO: вместо генерации материала для каждого блока генерировать материал только для каждого цвета
     });
 });
@@ -197,6 +197,9 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
     }
 }
 
+function easeInOutCubic(x){
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
 
 let rotateAroundParentAxis = function(object, axis, radians) {
     let rotWorldMatrix = new THREE.Matrix4();
@@ -212,10 +215,38 @@ let rotateAroundParentAxis = function(object, axis, radians) {
     object.position.set(newPos.x, newPos.y, newPos.z);
 };
 
-function easeInOutCubic(x){
-    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+function selectSimilarPosition( array, position, isX = true, isY = true, isZ = true, inaccuracy = 0.2 ){
+    let similarArray = [];
+
+    array.forEach(element => {
+        if ((!isX || (Math.abs(element.position.x - position.x) < inaccuracy))
+        && (!isY || (Math.abs(element.position.y - position.y) < inaccuracy))
+        && (!isZ || (Math.abs(element.position.z - position.z) < inaccuracy))) {
+            similarArray.push(element);
+        }
+    });
+
+
+    return similarArray;
 }
 
+
+
+function rotateObjects( rotationBlocks, direction, duration ){
+    let startTime = performance.now();
+    let step = 0;
+    return function rotate( currentTime ){
+        let lastStep = step;
+        step = easeInOutCubic( ( currentTime - startTime ) / duration );
+        console.log(currentTime);
+
+        if (step < 1) requestAnimationFrame( rotate ); else {step = 1; canRotate = true};
+        
+        rotationBlocks.forEach(element => {
+            rotateAroundParentAxis(element, direction, Math.PI/2*(step-lastStep));
+        });
+    }
+}
 
 let canRotate = true;
 // Управление мышью
@@ -266,87 +297,47 @@ document.addEventListener('mouseup', function (event) {
 
     if (block && block.parent?.name == "sideWrapper"){
         canRotate = false;
-        
-        let duration = 1000;
 
         let direction = new THREE.Vector3(0,0,0);
         let rotationBlocks = []
         let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
-        let startTime = performance.now();
-        let step = 0;
-        function rotateus( currentTime ){
-            let lastStep = step;
-
-            step = easeInOutCubic( ( currentTime - startTime ) / duration );
-
-            if (step < 1) requestAnimationFrame( rotateus ); else {step = 1; canRotate = true};
-            
-            rotationBlocks.forEach(element => {
-                rotateAroundParentAxis(element, direction, Math.PI/2*(step-lastStep));
-            });
-        }
 
         // Вращение в зависимости от выбранной грани
-        let inaccuracy = 0.2
         // Верхняя грань
         if (intersectSide.x == 0 && intersectSide.y == 1 && intersectSide.z == 0){
             if (0 < mouseDiff.angle() && mouseDiff.angle() < Math.PI / 2 || Math.PI < mouseDiff.angle() && mouseDiff.angle() < Math.PI * 3 / 2 ){
-                sideWrapper.children.forEach(element => {
-                    if (Math.abs(element.position.x - block.position.x) < inaccuracy){
-                        rotationBlocks.push(element)
-                    }
-                });
+                rotationBlocks = selectSimilarPosition(sideWrapper.children, block.position, true, false, false)
                 direction.set(mouseDiff.x > 0? -1 : 1, 0, 0);
             }
             else{
-                sideWrapper.children.forEach(element => {
-                    if (Math.abs(element.position.z - block.position.z) < inaccuracy){
-                        rotationBlocks.push(element)
-                    }
-                });
+                rotationBlocks = selectSimilarPosition(sideWrapper.children, block.position, false, false, true)
                 direction.set(0, 0, mouseDiff.x > 0? -1 : 1);
             }
         }
         // Левая грань
         if (intersectSide.x == 0 && intersectSide.y == 0 && intersectSide.z == 1){
             if (Math.PI / 9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
-                sideWrapper.children.forEach(element => {
-                    if (Math.abs(element.position.x - block.position.x) < inaccuracy){
-                        rotationBlocks.push(element);
-                    }
-                });
+                rotationBlocks = selectSimilarPosition(sideWrapper.children, block.position, true, false, false)
                 direction.set( mouseDiff.y > 0? -1: 1, 0, 0);
             }
             else{
-                sideWrapper.children.forEach(element => {
-                    if (Math.abs(element.position.y - block.position.y) < inaccuracy){
-                        rotationBlocks.push(element)
-                    }
-                });
+                rotationBlocks = selectSimilarPosition(sideWrapper.children, block.position, false, true, false)
                 direction.set(0, mouseDiff.x > 0? 1: -1, 0);
             }
         }
         // Правая грань
         if (intersectSide.x == 1 && intersectSide.y == 0 && intersectSide.z == 0){
             if (Math.PI / 9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
-                sideWrapper.children.forEach(element => {
-                    if (Math.abs(element.position.z - block.position.z) < inaccuracy){
-                        rotationBlocks.push(element);
-                    }
-                });
+                rotationBlocks = selectSimilarPosition(sideWrapper.children, block.position, false, false, true)
                 direction.set( 0, 0, mouseDiff.y > 0? 1: -1);
             }
             else{
-                sideWrapper.children.forEach(element => {
-                    if (Math.abs(element.position.y - block.position.y) < inaccuracy){
-                        rotationBlocks.push(element)
-                    }
-                });
+                rotationBlocks = selectSimilarPosition(sideWrapper.children, block.position, false, true, false)
                 direction.set(0, mouseDiff.x > 0? 1: -1, 0);
             }
         }
 
-        requestAnimationFrame(rotateus);
+        requestAnimationFrame(rotateObjects( rotationBlocks, direction, 1000));
     }
 });
 
@@ -358,24 +349,10 @@ document.addEventListener('mouseup', function (event) {
 //  E - Вправо вверх
 //  С зажатым shif - в обратную сторону
 document.addEventListener('keydown', function( event ){
-    let duration = 1000;
-
-    let startTime = performance.now();
-    let step = 0;
-
     let direction = null;
     let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
 
-    function rotateBuvosKockaAnimation ( currentTime ){
-        let lastStep = step;
-
-        step = easeInOutCubic( ( currentTime - startTime ) / duration );
-        if (step < 1) requestAnimationFrame( rotateBuvosKockaAnimation ); else {step = 1; canRotate = true};
- 
-        sideWrapper.children.forEach( cube => {
-            rotateAroundParentAxis(cube, direction, Math.PI / 2 * (step-lastStep));
-        });
-    }
+    rotateObjects(sideWrapper.children, direction, 1000);
 
     if (["KeyQ", "KeyW", "KeyE"].indexOf(event.code) > -1 && canRotate){
         switch( event.code ){
@@ -390,8 +367,10 @@ document.addEventListener('keydown', function( event ){
                 break;
         }
         canRotate = false;
-        requestAnimationFrame( rotateBuvosKockaAnimation );
+
+        requestAnimationFrame(rotateObjects(sideWrapper.children, direction, 1000));
     }
+    shuffleBuvosKocka(10, 1000)
 });
 
 // Куб двигается вверх и вниз
