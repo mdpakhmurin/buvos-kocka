@@ -12,7 +12,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 
 const scene = new THREE.Scene();
 
-let width = 15;
+let width = 30;
 let height = width * ( window.innerHeight / window.innerWidth );
 const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 200 );
 
@@ -60,14 +60,14 @@ objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
         }
     } );
     objLoader.load(require('@static/models/sticker.obj').default, ( sticker ) => {
-        createBuvosKocka( buvosKocka, cube, sticker, { x: 2, y: 2, z: 2}, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
+        createBuvosKocka( buvosKocka, cube, sticker, 5, [0xffb611, 'yellow', 'green', 0xff0000, 0xffffff, 0x28DAFB ] );
         //TODO: вместо генерации материала для каждого блока генерировать материал только для каждого цвета
     });
 });
 
 function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
     let sideWrapper = new THREE.Mesh(
-                        new THREE.BoxGeometry(size.x, size.y, size.z),
+                        new THREE.BoxGeometry(size, size, size),
                         new THREE.MeshPhongMaterial({opacity:0, transparent: true, alphaTest: 1})
                     ); 
     sideWrapper.name = "sideWrapper";
@@ -76,7 +76,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
     function createBuvosKockaBlock(position){
         let cube = cubeModel.clone();
-        cube.position.set(position.x - size.x/2 + 0.5, position.y - size.y/2 + 0.5, position.z-size.z/2  + 0.5);
+        cube.position.set(position.x - size/2 + 0.5, position.y - size/2 + 0.5, position.z-size/2  + 0.5);
         sideWrapper.add(cube);
 
         if ( position.x == 0){
@@ -94,7 +94,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             cube.add(sticker);
         }
-        if ( position.x == size.x-1 ){
+        if ( position.x == size-1 ){
             let sticker = stickerModel.clone();
             sticker.position.set(+0.5, 0, 0);
 
@@ -125,7 +125,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             cube.add(sticker);
         }
-        if ( position.y == size.y-1 ){
+        if ( position.y == size-1 ){
             let sticker = stickerModel.clone();
             sticker.rotation.z = Math.PI/2;
             sticker.position.set(0, +0.5, 0);
@@ -157,7 +157,7 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
 
             cube.add(sticker);
         }
-        if ( position.z == size.z-1 ){
+        if ( position.z == size-1 ){
             let sticker = stickerModel.clone();
             sticker.rotation.y = Math.PI/2;
             sticker.position.set(0, 0, +0.5);
@@ -175,30 +175,26 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, colors){
         }
     }
 
-    for (let x = 0; x < size.x; x++){
-        for (let y = 0; y < size.y; y++){
+    for (let x = 0; x < size; x++){
+        for (let y = 0; y < size; y++){
             createBuvosKockaBlock( {x: x, y: y, z: 0} );
-            createBuvosKockaBlock( {x: x, y: y, z: size.z-1} );
+            createBuvosKockaBlock( {x: x, y: y, z: size-1} );
         }
     }
 
-    for (let x = 0; x < size.x; x++){
-        for (let z = 1; z < size.z-1; z++){
+    for (let x = 0; x < size; x++){
+        for (let z = 1; z < size-1; z++){
             createBuvosKockaBlock( {x: x, y: 0, z: z} );
-            createBuvosKockaBlock( {x: x, y: size.y-1, z: z} );
+            createBuvosKockaBlock( {x: x, y: size-1, z: z} );
         }
     }
 
-    for (let y = 1; y < size.y-1; y++){
-        for (let z = 1; z < size.z-1; z++){
+    for (let y = 1; y < size-1; y++){
+        for (let z = 1; z < size-1; z++){
             createBuvosKockaBlock( { x: 0, y: y, z: z } );
-            createBuvosKockaBlock( { x: size.x - 1, y: y, z: z } );
+            createBuvosKockaBlock( { x: size - 1, y: y, z: z } );
         }
     }
-}
-
-function easeInOutCubic(x){
-    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
 
 let rotateAroundParentAxis = function(object, axis, radians) {
@@ -230,19 +226,62 @@ function selectSimilarPosition( array, position, isX = true, isY = true, isZ = t
     return similarArray;
 }
 
-function rotateObjects( rotationBlocks, direction, duration ){
+function easeInOutCubic(x){
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+function shuffleBuvosKocka( count, startDuration, endDuration, transitionCount ){
+    let currentCount = 0;
+    if (!canRotate)
+        return;
+
+    let cubes = buvosKocka.getObjectByName("sideWrapper").children;
+
+    function cycle(){
+        if ( currentCount > count ){
+            canRotate = true;
+            return;
+        }
+        canRotate = false;
+
+        let randomNumber = ~~(Math.random() * cubes.length);
+        let randomCube = cubes[randomNumber];
+
+        randomNumber = ~~(Math.random()*3);
+        let randomSide = selectSimilarPosition( cubes, randomCube.position, randomNumber == 0, randomNumber == 1, randomNumber == 2);
+        requestAnimationFrame( 
+            rotateObjects(  
+                randomSide, 
+                new THREE.Vector3(randomNumber == 0, randomNumber == 1, randomNumber == 2),
+
+                endDuration+(1-(currentCount > transitionCount? 1: currentCount/transitionCount))*(startDuration-endDuration),
+                cycle
+            )
+        );
+        currentCount++;
+    }
+    cycle();
+}
+
+function rotateObjects( rotationBlocks, direction, duration, afterEnd = null ){
     let startTime = performance.now();
     let step = 0;
     return function rotate( currentTime ){
         let lastStep = step;
         step = easeInOutCubic( ( currentTime - startTime ) / duration );
-        console.log(currentTime);
 
-        if (step < 1) requestAnimationFrame( rotate ); else {step = 1; canRotate = true};
+        if (step < 1) requestAnimationFrame( rotate ); else {
+            step = 1;}
         
         rotationBlocks.forEach(element => {
             rotateAroundParentAxis(element, direction, Math.PI/2*(step-lastStep));
         });
+
+        if (step == 1){
+            canRotate = true;
+            if (typeof(afterEnd) == 'function')
+                afterEnd();
+        };
     }
 }
 
@@ -265,7 +304,6 @@ document.addEventListener('mouseup', function (event) {
 
     if (!canRotate)
         return;
-
     let mouseDiff = new THREE.Vector2();
     mouseDiff.subVectors(mouseUpPosition, mouseDownPosition);
 
@@ -365,10 +403,10 @@ document.addEventListener('keydown', function( event ){
                 break;
         }
         canRotate = false;
-
         requestAnimationFrame(rotateObjects(sideWrapper.children, direction, 1000));
     }
-    shuffleBuvosKocka(10, 1000)
+    if (event.code=="KeyR")
+        shuffleBuvosKocka(20, 400, 100, 12)
 });
 
 // Куб двигается вверх и вниз
