@@ -1,20 +1,36 @@
-import * as THREE from '@modules/three/three.module.js'
-import {OBJLoader} from '@modules/three/OBJLoader.js'
+const BUVOS_KOCKA_SIZE = 3;
+
+import * as THREE from '@modules/three/three.module.js';
+import {OBJLoader} from '@modules/three/OBJLoader.js';
 
 let buvosKockaContainer = document.querySelector('.buvos-kocka');
 if (buvosKockaContainer){
 
-
 let renderer = new THREE.WebGLRenderer({ antialias: true });
 buvosKockaContainer.appendChild( renderer.domElement );
 renderer.shadowMap.enabled = true;
-renderer.setSize( window.innerWidth, window.innerHeight );
+
+let camera = new THREE.OrthographicCamera( -5, 5, 5, -5, 1, 200 );
+fitRenderer();
+function fitRenderer(){
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    let width = 10, height = 10;
+    if (window.innerWidth < window.innerHeight){
+        height = width * ( window.innerHeight / window.innerWidth );
+    }
+    else{
+        width = height * ( window.innerWidth / window.innerHeight )
+    }
+    camera.left = width / - 2;
+    camera.right = width / 2;
+    camera.top = height / 2;
+    camera.bottom = height / - 2;
+    camera.updateProjectionMatrix();
+}
+
+window.addEventListener('resize', fitRenderer);
 
 const scene = new THREE.Scene();
-
-let width = 30;
-let height = width * ( window.innerHeight / window.innerWidth );
-const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 200 );
 
 scene.background = new THREE.Color( 0xeeeeeee );
 camera.position.set(60, 51, 61);
@@ -66,7 +82,7 @@ objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
                 color: color
             });
         })
-        createBuvosKocka( buvosKocka, cube, sticker, 2,  materials);
+        createBuvosKocka( buvosKocka, cube, sticker, BUVOS_KOCKA_SIZE,  materials);
     });
 });
 
