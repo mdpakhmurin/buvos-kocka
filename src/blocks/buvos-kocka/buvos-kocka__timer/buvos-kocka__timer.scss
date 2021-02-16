@@ -1,0 +1,27 @@
+.buvos-kocka{
+    &__timer-wrapper{
+        position: absolute;
+        display: flex;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        justify-content: center;
+    }
+    &__timer{
+        margin-top: 70px;
+        font-size: 80px;
+        font-family: 'AlegreyaSans', sans-serif;
+        font-style: italic;
+        font-weight: 100;
+        width: 260px;
+
+        
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+}

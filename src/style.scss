@@ -1,0 +1,31 @@
+@import "@static/fonts/gagalin/gagalin.scss";
+@import "@static/fonts/montserrat/montserrat.scss";
+@import "@static/fonts/alegreya-sans/alegreya-sans.scss";
+
+@import "@blocks/content/content.scss";
+@import "@blocks/buvos-kocka/buvos-kocka__timer/buvos-kocka__timer.scss";
+
+body{
+    margin: 0;
+}
+
+.introduction__background{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: url('static/images/glass.png');
+    opacity: 0.07;
+    // filter: brightness(1.1);
+    z-index: -100;
+}
+
+.introduction__content{
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
