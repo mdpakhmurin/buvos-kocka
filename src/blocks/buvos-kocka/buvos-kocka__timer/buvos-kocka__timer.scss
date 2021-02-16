@@ -9,19 +9,11 @@
         justify-content: center;
     }
     &__timer{
-        margin-top: 70px;
-        font-size: 80px;
+        margin-top: 110px;
+        font-size: 60px;
         font-family: 'AlegreyaSans', sans-serif;
         font-style: italic;
         font-weight: 100;
-        width: 260px;
-
-        
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
+        width: 200px;
     }
 }

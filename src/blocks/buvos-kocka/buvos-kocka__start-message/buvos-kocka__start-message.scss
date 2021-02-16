@@ -1,0 +1,27 @@
+.buvos-kocka__start-message{
+    &-wrapper{
+        display: flex;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        align-items: center;
+        justify-content: center;
+    }
+
+    max-width: 100%;
+    width: 500px;
+    border: 20px solid rgb(88, 180, 255);
+    border-radius: 10px;
+    padding: 20px 20px 10px 20px;
+    background-color: rgb(120, 193, 253);
+    color: white;
+    font-family: 'AlegreyaSans';
+    line-height: 40px;
+
+    & p:last-child{
+        padding-top: 50px;
+        text-align: center;
+    }
+}

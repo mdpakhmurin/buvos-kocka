@@ -8,7 +8,7 @@ module.exports = {
         main: path.resolve(__dirname, './src/index.js'),
     },
     output: {
-        path: path.resolve(__dirname, './dist'),
+        path: path.resolve(__dirname, './bundle'),
         filename: 'bundle.js',
     },
     resolve: {
@@ -96,7 +96,7 @@ module.exports = {
     ],
 
     devServer: {
-        contentBase: path.join(__dirname, 'dist/pages'),
+        contentBase: path.join(__dirname, 'bundle/pages'),
         compress: true,
         writeToDisk:true,
         port: 8080,
