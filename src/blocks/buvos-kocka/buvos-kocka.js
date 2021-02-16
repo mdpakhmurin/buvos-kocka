@@ -66,7 +66,7 @@ objLoader.load(require('@static/models/cube.obj').default, ( cube ) => {
                 color: color
             });
         })
-        createBuvosKocka( buvosKocka, cube, sticker, 5,  materials);
+        createBuvosKocka( buvosKocka, cube, sticker, 2,  materials);
     });
 });
 
@@ -371,6 +371,77 @@ document.addEventListener('mouseup', function (event) {
 //  W - Вправо
 //  E - Вправо вверх
 //  С зажатым shif - в обратную сторону
+
+
+
+
+function checkBuvosKocka(){
+    let sides = [];
+
+    let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
+
+    let firstBlock = null;
+    let secondBlock = null;
+
+    // Выбрать два противоположных угла кубика рубика
+    sideWrapper.children.forEach(element => {
+        if (firstBlock == null && element.children.length == 4){
+            firstBlock = element
+        }
+        else if (element.children.length == 4){   
+            let matchPosition = false;
+            for (let i = 0; i < element.children.length; i++) {
+                for(let j = 0; j < firstBlock.children.length; j++){
+                    if ((Math.abs(firstBlock.position.x - element.position.x) < 0.2)||
+                        (Math.abs(firstBlock.position.y - element.position.y) < 0.2)||
+                        (Math.abs(firstBlock.position.y - element.position.y) < 0.2)){
+                            matchPosition = true;
+                            break;
+                    }
+                }
+                if (matchPosition)
+                    break;
+            }
+            if (matchPosition == false){
+                secondBlock = element;
+            }
+        }
+    });
+
+    // Выбрать стороны кубика рубка
+    for (let i = 0; i < 3; i ++){
+        sides.push(selectSimilarPosition(sideWrapper.children, firstBlock.position, i == 0, i == 1, i == 2))
+        sides.push(selectSimilarPosition(sideWrapper.children, secondBlock.position, i == 0, i == 1, i == 2))
+    }
+
+
+    return function(){
+        let matchRotation = true;
+        for (let i = 0; i < sides.length; i++){
+            for (let j = 1; j < sides[i].length; j++){
+                if (
+                    (Math.abs(sides[i][j].rotation._x - sides[i][j-1].rotation._x) > 0.2) ||
+                    (Math.abs(sides[i][j].rotation._y - sides[i][j-1].rotation._y) > 0.2) ||
+                    (Math.abs(sides[i][j].rotation._z - sides[i][j-1].rotation._z) > 0.2)
+                )
+                
+                {
+                    matchRotation = false;
+                    break;
+                }
+            }
+            if (!matchRotation)
+                break;
+        }
+        if (matchRotation == true)
+            console.log("Yes");
+        else
+            console.log("No")
+    }
+}
+
+
+let flex = null;
 document.addEventListener('keydown', function( event ){
     let direction = new THREE.Vector3(0,0,0);
     let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
@@ -391,16 +462,6 @@ document.addEventListener('keydown', function( event ){
         }
         canRotate = false;
         requestAnimationFrame(rotateObjects(sideWrapper.children, direction, 1000));
-    }
-    if (event.code=="KeyR")
-    {
-        let firstBlock = null
-        sideWrapper.children.forEach(element => {
-            if (element.children.length == 4){
-                firstBlock = element
-                firstBlock.visible = false;
-            }
-        });
     }
 });
 
