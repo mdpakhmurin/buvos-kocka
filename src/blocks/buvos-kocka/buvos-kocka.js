@@ -208,7 +208,72 @@ function createBuvosKocka( target, cubeModel, stickerModel, size, materials){
             createBuvosKockaBlock( { x: size - 1, y: y, z: z } );
         }
     }
+
+    checkBuvosKocka = _checkBuvosKocka();
 }
+
+function _checkBuvosKocka(){
+    let sides = [];
+
+    let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
+
+    let firstBlock = null;
+    let secondBlock = null;
+
+    // Выбрать два противоположных угла кубика рубика
+    sideWrapper.children.forEach(element => {
+        if (firstBlock == null && element.children.length == 4){
+            firstBlock = element
+        }
+        else if (element.children.length == 4){   
+            let matchPosition = false;
+            for (let i = 0; i < element.children.length; i++) {
+                for(let j = 0; j < firstBlock.children.length; j++){
+                    if ((Math.abs(firstBlock.position.x - element.position.x) < 0.2)||
+                        (Math.abs(firstBlock.position.y - element.position.y) < 0.2)||
+                        (Math.abs(firstBlock.position.y - element.position.y) < 0.2)){
+                            matchPosition = true;
+                            break;
+                    }
+                }
+                if (matchPosition)
+                    break;
+            }
+            if (matchPosition == false){
+                secondBlock = element;
+            }
+        }
+    });
+
+    // Выбрать стороны кубика рубка
+    for (let i = 0; i < 3; i ++){
+        sides.push(selectSimilarPosition(sideWrapper.children, firstBlock.position, i == 0, i == 1, i == 2))
+        sides.push(selectSimilarPosition(sideWrapper.children, secondBlock.position, i == 0, i == 1, i == 2))
+    }
+
+
+    return function(){
+        let matchRotation = true;
+        for (let i = 0; i < sides.length; i++){
+            for (let j = 1; j < sides[i].length; j++){
+                if (
+                    (Math.abs(sides[i][j].rotation._x - sides[i][j-1].rotation._x) > 0.2) ||
+                    (Math.abs(sides[i][j].rotation._y - sides[i][j-1].rotation._y) > 0.2) ||
+                    (Math.abs(sides[i][j].rotation._z - sides[i][j-1].rotation._z) > 0.2)
+                )
+                
+                {
+                    matchRotation = false;
+                    break;
+                }
+            }
+            if (!matchRotation)
+                break;
+        }
+        return matchRotation == true;
+    }
+}
+let checkBuvosKocka;
 
 let rotateAroundParentAxis = function(object, axis, radians) {
     let rotWorldMatrix = new THREE.Matrix4();
@@ -284,8 +349,7 @@ function rotateObjects( rotationBlocks, direction, duration, afterEnd = null ){
         let lastStep = step;
         step = easeInOutCubic( ( currentTime - startTime ) / duration );
 
-        if (step < 1) requestAnimationFrame( rotate ); else {
-            step = 1;}
+        if (step < 1) requestAnimationFrame( rotate ); else { step = 1;}
         
         rotationBlocks.forEach(element => {
             rotateAroundParentAxis(element, direction, Math.PI/2*(step-lastStep));
@@ -315,7 +379,7 @@ document.addEventListener('mouseup', function (event) {
     mouseUpPosition.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouseUpPosition.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-    if (!canRotate || gameMode == 0)
+    if (!canRotate || gameMode == 0 || gameMode==3)
         return;
 
     let mouseDiff = new THREE.Vector2();
@@ -388,75 +452,10 @@ document.addEventListener('mouseup', function (event) {
             }
         }
 
-        requestAnimationFrame(rotateObjects( rotationBlocks, direction, 1000));
+        requestAnimationFrame(rotateObjects( rotationBlocks, direction, 1000, ()=>{if (checkBuvosKocka()) requestAnimationFrame(finishGame);}));
     }
 });
 
-
-function checkBuvosKocka(){
-    let sides = [];
-
-    let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
-
-    let firstBlock = null;
-    let secondBlock = null;
-
-    // Выбрать два противоположных угла кубика рубика
-    sideWrapper.children.forEach(element => {
-        if (firstBlock == null && element.children.length == 4){
-            firstBlock = element
-        }
-        else if (element.children.length == 4){   
-            let matchPosition = false;
-            for (let i = 0; i < element.children.length; i++) {
-                for(let j = 0; j < firstBlock.children.length; j++){
-                    if ((Math.abs(firstBlock.position.x - element.position.x) < 0.2)||
-                        (Math.abs(firstBlock.position.y - element.position.y) < 0.2)||
-                        (Math.abs(firstBlock.position.y - element.position.y) < 0.2)){
-                            matchPosition = true;
-                            break;
-                    }
-                }
-                if (matchPosition)
-                    break;
-            }
-            if (matchPosition == false){
-                secondBlock = element;
-            }
-        }
-    });
-
-    // Выбрать стороны кубика рубка
-    for (let i = 0; i < 3; i ++){
-        sides.push(selectSimilarPosition(sideWrapper.children, firstBlock.position, i == 0, i == 1, i == 2))
-        sides.push(selectSimilarPosition(sideWrapper.children, secondBlock.position, i == 0, i == 1, i == 2))
-    }
-
-
-    return function(){
-        let matchRotation = true;
-        for (let i = 0; i < sides.length; i++){
-            for (let j = 1; j < sides[i].length; j++){
-                if (
-                    (Math.abs(sides[i][j].rotation._x - sides[i][j-1].rotation._x) > 0.2) ||
-                    (Math.abs(sides[i][j].rotation._y - sides[i][j-1].rotation._y) > 0.2) ||
-                    (Math.abs(sides[i][j].rotation._z - sides[i][j-1].rotation._z) > 0.2)
-                )
-                
-                {
-                    matchRotation = false;
-                    break;
-                }
-            }
-            if (!matchRotation)
-                break;
-        }
-        if (matchRotation == true)
-            console.log("Yes");
-        else
-            console.log("No")
-    }
-}
 
 // Управление клавиатурой
 // Вращение кубика рубика
@@ -482,7 +481,7 @@ document.addEventListener('keydown', function( event ){
                 break;
         }
         canRotate = false;
-        requestAnimationFrame(rotateObjects(sideWrapper.children, direction, 1000));
+        requestAnimationFrame(rotateObjects(sideWrapper.children, direction, 1000, ()=>{if (checkBuvosKocka()) gameMode = 3;}));
     }
     if ( event.code == 'Space' && gameMode == 0 ){
         shuffleBuvosKocka(100, 1000, 1, 20, () => { gameMode = 1; });
@@ -511,19 +510,36 @@ function stopwatch ( time ){
         buvosKockaTimer.textContent = (~~((time-startTime)/1000/60)).toString().padStart(2, '0') + "." + 
                                     (~~((time-startTime)/1000)%60).toString().padStart(2, '0') + "." +
                                     (~~((time-startTime)/10)%100).toString().padStart(2, '0');
-        requestAnimationFrame(updateStopwatch);
+        
+        if (gameMode == 2)
+            requestAnimationFrame(updateStopwatch);
     }
     if (gameMode == 2)
         requestAnimationFrame(updateStopwatch);
-
-
 }
 requestAnimationFrame(stopwatch);
+
+function finishGame( time ){
+    gameMode = 3;
+    let duration = 1000;
+    let startTime = time;
+    let startG = scene.background.g;
+    let startB = scene.background.b;
+    function _finishGame( time ){
+        let step = ( time - startTime ) / duration;
+        scene.background.g = step * (1-startG) + startG;
+        scene.background.b = step * (0.8-startB) + startB;
+        if (scene.background.g < 1)
+            requestAnimationFrame(_finishGame)
+    }
+    requestAnimationFrame(_finishGame);
+}
 
 function animate() {
     requestAnimationFrame( animate );
     renderer.render( scene, camera );
 };
+
 animate();
 
 }
