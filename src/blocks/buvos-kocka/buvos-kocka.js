@@ -14,7 +14,9 @@ let camera = new THREE.OrthographicCamera( -5, 5, 5, -5, 1, 200 );
 fitRenderer();
 function fitRenderer(){
     renderer.setSize( window.innerWidth, window.innerHeight );
-    let width = 10, height = 10;
+    let width = 4, height = 4;
+    width *= BUVOS_KOCKA_SIZE;
+    height *= BUVOS_KOCKA_SIZE
     if (window.innerWidth < window.innerHeight){
         height = width * ( window.innerHeight / window.innerWidth );
     }
@@ -39,7 +41,7 @@ camera.rotation.set(-0.696, 0.648, 0.467);
 // Освещение
 let topShadowDirectionalLight = new THREE.DirectionalLight( 0xffffff, 0.4 );
 topShadowDirectionalLight.castShadow = true;
-topShadowDirectionalLight.shadow.radius = 60;
+topShadowDirectionalLight.shadow.radius = 20 * BUVOS_KOCKA_SIZE;
 topShadowDirectionalLight.shadow.mapSize.width = 4096;
 topShadowDirectionalLight.shadow.mapSize.height = 4096;
 scene.add(topShadowDirectionalLight);
@@ -53,9 +55,9 @@ let ambientLight = new THREE.AmbientLight( 0xffffff, 0.5 );
 scene.add( ambientLight );
 
 // Плоскость для тени
-let plane = new THREE.Mesh( new THREE.PlaneGeometry( 10, 10, 1, 1 ), new THREE.ShadowMaterial({opacity:0.1}));
+let plane = new THREE.Mesh( new THREE.PlaneGeometry( BUVOS_KOCKA_SIZE+5, BUVOS_KOCKA_SIZE+5, 1, 1 ), new THREE.ShadowMaterial({opacity:0.1}));
 plane.rotation.x = -Math.PI/2;
-plane.position.set( 2, -3, 2 );
+plane.position.set( 0, -BUVOS_KOCKA_SIZE, 0 );
 plane.receiveShadow = true;
 scene.add(plane);
 
@@ -490,8 +492,8 @@ document.addEventListener('keydown', function( event ){
 
 // Куб двигается вверх и вниз
 function buvosKockaFly( time ){
-    buvosKocka.position.y = Math.sin( time * 0.001 ) * 0.2;
-    plane.material.opacity = 1 - ( Math.sin( time * 0.001 ) * 0.07 + 0.9);
+    buvosKocka.position.y = Math.sin( time * 0.001 ) * 0.06 * BUVOS_KOCKA_SIZE;
+    plane.material.opacity = 1 - ( Math.sin( time * 0.001 ) * 0.04 + 0.93);
     requestAnimationFrame(buvosKockaFly);
 }
 requestAnimationFrame(buvosKockaFly);
