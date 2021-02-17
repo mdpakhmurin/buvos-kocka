@@ -59,6 +59,9 @@ plane.position.set( 2, -3, 2 );
 plane.receiveShadow = true;
 scene.add(plane);
 
+// Разрешено ли вращать кубик
+let canRotate = false;
+
 let buvosKocka = new THREE.Object3D();
 buvosKocka.name = "buvosKocka";
 scene.add(buvosKocka);
@@ -288,7 +291,6 @@ function rotateObjects( rotationBlocks, direction, duration, afterEnd = null ){
     }
 }
 
-let canRotate = true;
 // Управление мышью
 const raycaster = new THREE.Raycaster();
 //
