@@ -59,8 +59,15 @@ plane.position.set( 2, -3, 2 );
 plane.receiveShadow = true;
 scene.add(plane);
 
+// Стадия игры
+// 0 - Игра не началась
+// 1 - Ожидание запуска
+// 2 - Игра запущена
+// 3 - Игра завершена
+let gameMode = 0;
+
 // Разрешено ли вращать кубик
-let canRotate = false;
+let canRotate = true;
 
 let buvosKocka = new THREE.Object3D();
 buvosKocka.name = "buvosKocka";
@@ -236,7 +243,7 @@ function easeInOutCubic(x){
     return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
 
-function shuffleBuvosKocka( count, startDuration, endDuration, transitionCount ){
+function shuffleBuvosKocka( count, startDuration, endDuration, transitionCount, callback ){
     let currentCount = 0;
     if (!canRotate)
         return;
@@ -246,6 +253,7 @@ function shuffleBuvosKocka( count, startDuration, endDuration, transitionCount )
     function cycle(){
         if ( currentCount > count ){
             canRotate = true;
+            callback();
             return;
         }
         canRotate = false;
@@ -260,7 +268,7 @@ function shuffleBuvosKocka( count, startDuration, endDuration, transitionCount )
                 randomSide, 
                 new THREE.Vector3(randomNumber == 0, randomNumber == 1, randomNumber == 2),
 
-                endDuration+(1-(currentCount > transitionCount? 1: currentCount/transitionCount))*(startDuration-endDuration),
+                endDuration+(1-(currentCount > transitionCount? 1: Math.sqrt(1 - Math.pow(currentCount/transitionCount - 1, 2))))*(startDuration-endDuration),
                 cycle
             )
         );
@@ -307,8 +315,9 @@ document.addEventListener('mouseup', function (event) {
     mouseUpPosition.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouseUpPosition.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-    if (!canRotate)
+    if (!canRotate || gameMode == 0)
         return;
+
     let mouseDiff = new THREE.Vector2();
     mouseDiff.subVectors(mouseUpPosition, mouseDownPosition);
 
@@ -337,6 +346,7 @@ document.addEventListener('mouseup', function (event) {
         block = block.parent;
 
     if (block && block.parent?.name == "sideWrapper"){
+        gameMode = 2;
         canRotate = false;
 
         let direction = new THREE.Vector3(0,0,0);
@@ -381,16 +391,6 @@ document.addEventListener('mouseup', function (event) {
         requestAnimationFrame(rotateObjects( rotationBlocks, direction, 1000));
     }
 });
-
-
-// Управление клавиатурой
-// Вращение кубика рубика
-//  Q - Влево вверх
-//  W - Вправо
-//  E - Вправо вверх
-//  С зажатым shif - в обратную сторону
-
-
 
 
 function checkBuvosKocka(){
@@ -458,15 +458,18 @@ function checkBuvosKocka(){
     }
 }
 
-
-let flex = null;
+// Управление клавиатурой
+// Вращение кубика рубика
+//  Q - Влево вверх
+//  W - Вправо
+//  E - Вправо вверх
+//  С зажатым shif - в обратную сторону
 document.addEventListener('keydown', function( event ){
     let direction = new THREE.Vector3(0,0,0);
     let sideWrapper = buvosKocka.getObjectByName("sideWrapper");
 
-    rotateObjects(sideWrapper.children, direction, 1000);
-
-    if (["KeyQ", "KeyW", "KeyE"].indexOf(event.code) > -1 && canRotate){
+    if (["KeyQ", "KeyW", "KeyE"].indexOf(event.code) > -1 && canRotate && (gameMode == 1 || gameMode == 2)){
+        gameMode = 2;
         switch( event.code ){
             case 'KeyQ': 
                 direction.set( 0, 0, event.shiftKey == 1? -1: 1 );
@@ -481,6 +484,9 @@ document.addEventListener('keydown', function( event ){
         canRotate = false;
         requestAnimationFrame(rotateObjects(sideWrapper.children, direction, 1000));
     }
+    if ( event.code == 'Space' && gameMode == 0 ){
+        shuffleBuvosKocka(100, 1000, 1, 20, () => { gameMode = 1; });
+    }
 });
 
 // Куб двигается вверх и вниз
@@ -492,12 +498,25 @@ function buvosKockaFly( time ){
 requestAnimationFrame(buvosKockaFly);
 
 let buvosKockaTimer = document.querySelector('.buvos-kocka__timer');
-function stopwatch ( time ){
-    buvosKockaTimer.textContent = (~~(time/1000/60)).toString().padStart(2, '0') + "." + 
-                                (~~(time/1000)%60).toString().padStart(2, '0') + "." +
-                                (~~(time/10)%100).toString().padStart(2, '0');
 
-    requestAnimationFrame(stopwatch);
+function stopwatch ( time ){
+    if (gameMode == 0 || gameMode == 1){
+        requestAnimationFrame(stopwatch);
+        return;
+    }
+
+    let startTime = time;
+
+    function updateStopwatch( time ){
+        buvosKockaTimer.textContent = (~~((time-startTime)/1000/60)).toString().padStart(2, '0') + "." + 
+                                    (~~((time-startTime)/1000)%60).toString().padStart(2, '0') + "." +
+                                    (~~((time-startTime)/10)%100).toString().padStart(2, '0');
+        requestAnimationFrame(updateStopwatch);
+    }
+    if (gameMode == 2)
+        requestAnimationFrame(updateStopwatch);
+
+
 }
 requestAnimationFrame(stopwatch);
 

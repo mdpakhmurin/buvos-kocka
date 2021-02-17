@@ -19,10 +19,11 @@
     color: white;
     font-family: 'AlegreyaSans';
     line-height: 40px;
-    transition: opacity 1.1s;
+    transition: opacity 1.1s, visibility 1.2s;
 
     &_hidden{
         opacity: 0;
+        visibility: hidden;
     }
 
     & p:last-child{
