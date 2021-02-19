@@ -433,7 +433,7 @@ document.addEventListener('mouseup', function (event) {
         }
         // Левая грань
         if (intersectSide.x == 0 && intersectSide.y == 0 && intersectSide.z == 1){
-            if (Math.PI / 9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
+            if (Math.PI * 5 / 12 < mouseDiff.angle() && mouseDiff.angle() < Math.PI* 7/12 || Math.PI*17/12 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*19/12 ){
                 rotationBlocks = selectSimilarPosition(sideWrapper.children, block.position, true, false, false)
                 direction.set( mouseDiff.y > 0? -1: 1, 0, 0);
             }
@@ -444,7 +444,7 @@ document.addEventListener('mouseup', function (event) {
         }
         // Правая грань
         if (intersectSide.x == 1 && intersectSide.y == 0 && intersectSide.z == 0){
-            if (Math.PI / 9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*8/9 || Math.PI*10/9 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*17/9 ){
+            if (Math.PI * 5 / 12 < mouseDiff.angle() && mouseDiff.angle() < Math.PI* 7/12 || Math.PI*17/12 < mouseDiff.angle() && mouseDiff.angle() < Math.PI*19/12 ){
                 rotationBlocks = selectSimilarPosition(sideWrapper.children, block.position, false, false, true)
                 direction.set( 0, 0, mouseDiff.y > 0? 1: -1);
             }
