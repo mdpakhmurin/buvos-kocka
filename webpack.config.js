@@ -1,7 +1,8 @@
 const path = require('path')
 const glob = require('glob');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     entry: {
@@ -30,7 +31,7 @@ module.exports = {
             {
                 test: /\.s[ac]ss$/i,
                 use: [
-                  "style-loader",
+                  MiniCssExtractPlugin.loader,
                   "css-loader",
                   "sass-loader"
                 ],
@@ -92,6 +93,7 @@ module.exports = {
             template: page,
             filename: `pages/${path.basename(page, path.extname(page))}.html`
         })),
+        new MiniCssExtractPlugin(),
         new CleanWebpackPlugin(),
     ],
 
